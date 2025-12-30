@@ -354,4 +354,4 @@ class AnchorCrewMemory:
             memory.restore_checkpoint(checkpoint_id)
             print("Memory restored to checkpoint")
         """
-        result = self.anchor.checkpoints.restore(self._agent_id, checkpoint_id)
+        self.anchor.checkpoints.restore(self._agent_id, checkpoint_id)

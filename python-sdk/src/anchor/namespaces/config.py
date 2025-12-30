@@ -1,7 +1,7 @@
 """Config namespace for agent configuration management."""
 
 from typing import Optional, Dict, Any, List
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 
 from .base import BaseNamespace

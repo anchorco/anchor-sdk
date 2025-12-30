@@ -407,7 +407,7 @@ class AnchorMem0:
             wrapped.restore_checkpoint(checkpoint_id)
             print("Memory restored to checkpoint")
         """
-        result = self.anchor.checkpoints.restore(self.agent_id, checkpoint_id)
+        self.anchor.checkpoints.restore(self.agent_id, checkpoint_id)
         # Note: Mem0's internal state may need to be reloaded after restore
 
     def query_audit_log(

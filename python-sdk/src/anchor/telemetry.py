@@ -80,7 +80,7 @@ class Telemetry:
 
                         parsed = urlparse(self.base_url)
                         payload["base_url_domain"] = parsed.netloc or "localhost"
-                    except:
+                    except Exception:
                         pass
 
                 self.session.post(

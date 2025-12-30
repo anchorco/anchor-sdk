@@ -5,7 +5,11 @@
 
 **Control what your AI agents store. Audit everything.**
 
-_Block_ bad data before storage. _Prove_ what happened. _Rollback_ when things break.
+_Block_ bad data before storage.
+
+_Prove_ what happened.
+
+_Rollback_ when things break.
 
 
 ## Installation
@@ -22,7 +26,7 @@ Sign up at [app.getanchor.dev](https://app.getanchor.dev) to get your API key an
 
 ### 2. Start Using Anchor
 
-**Python** ([PyPI](https://pypi.org/project/anchorai/), [docs](python-sdk/README.md)):
+**Python** ([PyPI](https://pypi.org/project/anchorai/1.0.0/), [code](https://github.com/anchorco/anchor-sdk/python-sdk)):
 ```python
 from anchor import Anchor
 
@@ -32,7 +36,7 @@ agent = anchor.agents.create("support-bot")
 anchor.config.update(agent.id, {"policies": {"block_pii": True}})
 ```
 
-**TypeScript** ([npm](https://www.npmjs.com/package/anchorai), [docs](typescript-sdk/README.md)):
+**TypeScript** ([npm](https://www.npmjs.com/package/anchorai), [code](https://github.com/anchorco/anchor-sdk)):
 ```typescript
 import { Anchor } from 'anchorai';
 
@@ -52,12 +56,10 @@ await anchor.config.update(agent.id, { policies: { block_pii: true } });
 
 ## Documentation
 
-**Python Reference**: python-sdk/README.md
+[**Python Reference**](https://github.com/anchorco/anchor-sdk/tree/release/v1.0.0/python-sdk)
   
 **TypeScript Reference**: typescript-sdk/README.md
   
-**Examples**: examples/
-
 **Contributing**: Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 **License**: This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.

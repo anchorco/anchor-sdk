@@ -43,12 +43,10 @@ print(verification.valid)  # True
 
 ## Why Anchor?
 
-| Feature | What it does |
-|---------|--------------|
-| **Policy enforcement** | Block PII, secrets, and custom patterns before storage |
-| **Checkpoints & rollback** | Snapshot state, restore if something goes wrong |
-| **Audit trail** | Hash-chained log of every operation, queryable and verifiable |
-| **Retention policies** | Auto-expire data after N days |
+- **Policy enforcement**: Block PII, secrets, and custom patterns before storage
+- **Checkpoints & rollback**: Snapshot state, restore if something goes wrong
+- **Audit trail**: Hash-chained log of every operation, queryable and verifiable
+- **Retention policies**: Auto-expire data after N days 
 
 ## SDK Structure
 

@@ -1,6 +1,6 @@
 """Custom exceptions for Anchor SDK."""
 
-from typing import Optional, Dict, Any
+from typing import Dict, Any
 
 
 class AnchorError(Exception):

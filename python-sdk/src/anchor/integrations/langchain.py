@@ -228,7 +228,7 @@ class AnchorMemory:
             memory.restore_checkpoint(checkpoint_id)
             print("Conversation restored to checkpoint")
         """
-        result = self.anchor.checkpoints.restore(self.agent_id, checkpoint_id)
+        self.anchor.checkpoints.restore(self.agent_id, checkpoint_id)
         self._messages = []
         self._load_from_anchor()
 

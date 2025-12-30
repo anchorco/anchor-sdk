@@ -5,7 +5,6 @@ from datetime import datetime
 from typing import Optional, List, Dict, Any
 
 from .base import BaseNamespace
-from ..exceptions import NotFoundError
 
 
 @dataclass
