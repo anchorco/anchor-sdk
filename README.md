@@ -19,11 +19,11 @@ _Block_ bad data before storage. _Prove_ what happened. _Rollback_ when things b
 
 ### 1. Get an API Key
 
-Sign up at [app.getanchor.dev](https://getanchor.dev) to get your API key and workspace ID.
+Sign up at [getanchor.dev](https://getanchor.dev) to get your API key and workspace ID.
 
 ### 2. Start Using Anchor
 
-**Python** ([PyPI](https://pypi.org/project/anchorai), [code](https://github.com/anchorco/anchor-sdk/python-sdk)):
+**Python** ([PyPI](https://pypi.org/project/anchorai), [code](https://github.com/anchorco/anchor-sdk/tree/main/python-sdk)):
 ```python
 from anchor import Anchor
 
@@ -33,7 +33,7 @@ agent = anchor.agents.create("support-bot")
 anchor.config.update(agent.id, {"policies": {"block_pii": True}})
 ```
 
-**TypeScript** ([NPM](https://www.npmjs.com/package/anchorai), [code](https://github.com/anchorco/anchor-sdk/typescript-sdk)):
+**TypeScript** ([NPM](https://www.npmjs.com/package/anchorai), [code](https://github.com/anchorco/anchor-sdk/tree/main/typescript-sdk)):
 ```typescript
 import { Anchor } from 'anchorai';
 
@@ -53,9 +53,7 @@ await anchor.config.update(agent.id, { policies: { block_pii: true } });
 
 ## Docs
 
-[**Python Reference**](https://github.com/anchorco/anchor-sdk/tree/main/python-sdk)
-  
-[**TypeScript Reference**](https://github.com/anchorco/anchor-sdk/tree/main/typescript-sdk)
+https://docs.getanchor.dev/
   
 **Contributing**: Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
