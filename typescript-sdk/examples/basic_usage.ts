@@ -9,7 +9,7 @@
  * 5. audit      - Hash-chained audit trail
  */
 
-import { Anchor, defaultPolicyPack } from 'anchorai';
+import { Anchor, DefaultPolicyPack } from 'anchorai';
 
 // Initialize the Anchor client
 const anchor = new Anchor({ apiKey: 'your-api-key' }); // Or set ANCHOR_API_KEY env var
@@ -394,27 +394,29 @@ User message: ${message}
 }
 
 async function exampleDefaultPolicyPack() {
-  /** Example: Use defaultPolicyPack method for out of the box policy configuration */
+  /** Example: Use DefaultPolicyPack for out of the box policy configuration */
   console.log('\n+-+-+- Default Policy Pack -+-+-+\n');
 
   const agent = await anchor.agents.create('support-bot');
 
-  // Use defaultPolicyPack with no customization
+  // Use DefaultPolicyPack with no customization
   // Enables: PII blocking, Secret blocking, Query size limit, Approval for edit/delete/export actions
-  await anchor.config.update(agent.id, defaultPolicyPack());
+  await anchor.config.update(agent.id, new DefaultPolicyPack().getConfig());
   console.log('Applied default safety policies');
 
   // Customize specific policies
-  await anchor.config.update(agent.id, defaultPolicyPack({
+  const customPack = new DefaultPolicyPack({
     blockSecrets: false,
     maxQuerySize: 5000,
-  }));
+  });
+  await anchor.config.update(agent.id, customPack.getConfig());
   console.log('Applied customized policies (secrets blocking disabled, larger query limit)');
 
   // Disable specific policies
-  await anchor.config.update(agent.id, defaultPolicyPack({
+  const disabledPack = new DefaultPolicyPack({
     maxQuerySize: null,
-  }));
+  });
+  await anchor.config.update(agent.id, disabledPack.getConfig());
   console.log('Applied policies with query limit disabled');
 }
 

@@ -19,7 +19,7 @@ import type {
   Verification,
   ExportResult,
 } from '../namespaces';
-import { defaultPolicyPack } from '../policies';
+import { DefaultPolicyPack } from '../policies';
 
 // Mock fetch globally
 global.fetch = jest.fn();
@@ -818,9 +818,10 @@ describe('Model Edge Cases', () => {
   });
 });
 
-describe('defaultPolicyPack', () => {
+describe('DefaultPolicyPack', () => {
   it('should have correct defaults', () => {
-    const config = defaultPolicyPack();
+    const pack = new DefaultPolicyPack();
+    const config = pack.getConfig();
     const policies = config.policies;
 
     expect(policies.max_query_size).toBe(1000);
@@ -831,13 +832,14 @@ describe('defaultPolicyPack', () => {
   });
 
   it('should allow custom values', () => {
-    const config = defaultPolicyPack({
+    const pack = new DefaultPolicyPack({
       allowedDomains: ['example.com'],
       maxQuerySize: 500,
       requireApprovalFor: ['delete'],
       blockPii: false,
       blockSecrets: false,
     });
+    const config = pack.getConfig();
     const policies = config.policies;
 
     expect(policies.allowed_domains).toEqual(['example.com']);
@@ -848,11 +850,12 @@ describe('defaultPolicyPack', () => {
   });
 
   it('should allow disabling optional policies', () => {
-    const config = defaultPolicyPack({
+    const pack = new DefaultPolicyPack({
       allowedDomains: null,
       maxQuerySize: null,
       requireApprovalFor: null,
     });
+    const config = pack.getConfig();
     const policies = config.policies;
 
     expect(policies.allowed_domains).toBeUndefined();
