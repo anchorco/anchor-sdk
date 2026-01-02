@@ -39,38 +39,34 @@ from .config import Config as ClientConfig
 
 # Exceptions
 from .exceptions import (
-    AnchorError,
     AnchorAPIError,
+    AnchorError,
     AuthenticationError,
     AuthorizationError,
+    ChainIntegrityError,
+    NetworkError,
     NotFoundError,
-    ValidationError,
     PolicyViolationError,
     RateLimitError,
     ServerError,
-    NetworkError,
-    ChainIntegrityError,
+    ValidationError,
 )
 
 # Types from namespaces
-from .namespaces import (
-    # Agent types
+from .namespaces import (  # Agent types; Config types; Data types; Checkpoint types; Audit types
     Agent,
-    # Config types
+    AuditEvent,
+    Checkpoint,
     Config,
     ConfigVersion,
-    # Data types
-    WriteResult,
     DataEntry,
-    SearchResult,
-    # Checkpoint types
-    Checkpoint,
-    RestoreResult,
-    # Audit types
-    AuditEvent,
-    Verification,
     ExportResult,
+    RestoreResult,
+    SearchResult,
+    Verification,
+    WriteResult,
 )
+from .policies import DefaultPolicyPack
 
 __version__ = "1.0.0"
 
@@ -78,6 +74,7 @@ __all__ = [
     # Main client
     "Anchor",
     "ClientConfig",
+    "DefaultPolicyPack",
     # Agent types
     "Agent",
     # Config types

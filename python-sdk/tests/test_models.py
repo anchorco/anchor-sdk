@@ -17,6 +17,7 @@ from anchor.models import (
     Verification,
     ExportResult,
 )
+from anchor.policies import DefaultPolicyPack
 
 
 class TestAgent:
@@ -468,4 +469,51 @@ class TestModelValidation:
         json_str = agent.model_dump_json()
         assert isinstance(json_str, str)
         assert "agent_123" in json_str
+
+
+class TestPolicies:
+    """Tests for DefaultPolicyPack model."""
+
+    def test_default_policy_pack_defaults(self):
+        """Test DefaultPolicyPack with default values."""
+        pack = DefaultPolicyPack()
+        config = pack.get_config()
+
+        policies = config["policies"]
+
+        assert policies["max_query_size"] == 1000
+        assert policies["block_pii"] is True
+        assert policies["block_secrets"] is True
+        assert policies["require_approval_for"] == ["delete", "update", "export"]
+        assert "allowed_domains" not in policies
+
+    def test_default_policy_pack_custom_values(self):
+        """Test DefaultPolicyPack with custom values."""
+        pack = DefaultPolicyPack(
+            allowed_domains=["example.com"],
+            max_query_size=500,
+            require_approval_for=["delete"],
+            block_pii=False,
+            block_secrets=False,
+        )
+        config = pack.get_config()
+        policies = config["policies"]
+
+        assert policies["allowed_domains"] == ["example.com"]
+        assert policies["max_query_size"] == 500
+        assert policies["require_approval_for"] == ["delete"]
+        assert policies["block_pii"] is False
+        assert policies["block_secrets"] is False
+
+    def test_default_policy_pack_disable_optional(self):
+        """Test disabling optional policies with None."""
+        pack = DefaultPolicyPack(max_query_size=None, require_approval_for=None)
+        config = pack.get_config()
+        policies = config["policies"]
+
+        assert "max_query_size" not in policies
+        assert "require_approval_for" not in policies
+
+        assert policies["block_pii"] is True
+        assert policies["block_secrets"] is True
 
