@@ -9,7 +9,7 @@ These examples demonstrate the 5-namespace API:
 5. audit      - Hash-chained audit trail
 """
 
-from anchor import Anchor
+from anchor import Anchor, DefaultPolicyPack
 
 # Initialize the Anchor client
 anchor = Anchor(api_key="your-api-key")  # Or set ANCHOR_API_KEY env var
@@ -147,6 +147,29 @@ def example_config():
     if len(versions) > 1:
         anchor.config.rollback(agent.id, versions[1].version)
         print("Rolled back to previous config version")
+
+
+def example_default_policy_pack():
+    """Example: Use DefaultPolicyPack for out of the box policy configuration"""
+    print("\n+-+-+- Default Policy Pack -+-+-+\n")
+
+    agent = anchor.agents.create(name="default-policy-pack-demo")
+
+    # Use DefaultPolicyPack for out of the box policy configuration
+    # Enables: PII blocking, Secret blocking, Query size limit, Approval for edit/delete/export actions
+    anchor.config.update(agent.id, DefaultPolicyPack().get_config())
+    print("Applied default safety policies")
+
+    # Customize specific policies
+    custom_pack = DefaultPolicyPack(block_secrets=False, max_query_size=5000)
+    anchor.config.update(agent.id, custom_pack.get_config())
+    print("Applied customized policies (secrets allowed, larger query limit)")
+
+    # Disable specific policies by setting to None
+    # e.g. Disable max_query_size limit entirely
+    disabled_policy_pack = DefaultPolicyPack(max_query_size=None)
+    anchor.config.update(agent.id, disabled_policy_pack.get_config())
+    print("Applied policies with query limit disabled")
 
 
 def example_data_storage():
