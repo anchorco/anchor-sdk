@@ -19,6 +19,49 @@
 
 import type { Anchor } from '../anchor';
 
+// Generate a cryptographically secure random string suitable for session IDs.
+function getSecureRandomString(length: number): string {
+  const alphabet =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+  // Browser / WebCrypto
+  const globalCrypto: Crypto | undefined =
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (typeof globalThis !== 'undefined' && (globalThis as any).crypto) ||
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (typeof window !== 'undefined' && (window as any).crypto);
+
+  if (globalCrypto && typeof globalCrypto.getRandomValues === 'function') {
+    const bytes = new Uint8Array(length);
+    globalCrypto.getRandomValues(bytes);
+    let result = '';
+    for (let i = 0; i < length; i++) {
+      result += alphabet[bytes[i] % alphabet.length];
+    }
+    return result;
+  }
+
+  // Node.js crypto
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const nodeCrypto = require('crypto');
+    const bytes: Buffer = nodeCrypto.randomBytes(length);
+    let result = '';
+    for (let i = 0; i < length; i++) {
+      result += alphabet[bytes[i] % alphabet.length];
+    }
+    return result;
+  } catch {
+    // Fallback: not cryptographically secure, but avoids runtime failure
+    let result = '';
+    for (let i = 0; i < length; i++) {
+      const idx = Math.floor(Math.random() * alphabet.length);
+      result += alphabet[idx];
+    }
+    return result;
+  }
+}
+
 /**
  * Message structure for chat history
  */
@@ -194,7 +237,7 @@ export class AnchorChatHistory {
     this.agentId = agentId;
     this.sessionId =
       options?.sessionId ||
-      `session_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+      `session_${Date.now()}_${getSecureRandomString(16)}`;
   }
 
   /**
