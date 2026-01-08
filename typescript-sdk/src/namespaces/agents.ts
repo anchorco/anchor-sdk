@@ -72,13 +72,14 @@ export class AgentsNamespace {
    *
    * @param name - Human-readable agent name
    * @param metadata - Optional key-value metadata
+   * @param workspaceId - Optional workspace ID (overrides client default)
    * @returns Created Agent object
    */
-  async create(name: string, metadata?: Record<string, any>): Promise<Agent> {
+  async create(name: string, metadata?: Record<string, any>, workspaceId?: string): Promise<Agent> {
     const response = await this.http.post<{ agent: Record<string, any> }>('/agents', {
       name,
       metadata: metadata || {},
-    });
+    }, undefined, workspaceId);
     return parseAgent(response.agent || response);
   }
 

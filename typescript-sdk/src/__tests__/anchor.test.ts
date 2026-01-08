@@ -33,6 +33,12 @@ describe('Anchor Client', () => {
       expect(anchor.clientConfig.apiKey).toBe('anc_test_key');
     });
 
+    it('should initialize with workspaceId', () => {
+      const anchor = new Anchor({ apiKey: 'anc_test_key', workspaceId: 'workspace-123' });
+      expect(anchor.clientConfig.apiKey).toBe('anc_test_key');
+      expect(anchor.clientConfig.workspaceId).toBe('workspace-123');
+    });
+
     it('should have all 5 namespaces', () => {
       const anchor = new Anchor({ apiKey: 'anc_test_key' });
       expect(anchor.agents).toBeDefined();
@@ -41,6 +47,43 @@ describe('Anchor Client', () => {
       expect(anchor.checkpoints).toBeDefined();
       expect(anchor.audit).toBeDefined();
     });
+  });
+
+  describe('getWorkspaceId', () => {
+    it('should return workspaceId from config', async () => {
+      const anchor = new Anchor({ apiKey: 'anc_test_key', workspaceId: 'workspace-123' });
+      const workspaceId = await anchor.getWorkspaceId();
+      expect(workspaceId).toBe('workspace-123');
+    });
+
+    it('should fetch workspaceId from API when not in config', async () => {
+      const anchor = new Anchor({ apiKey: 'anc_test_key' });
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify({ workspaces: [{ id: 'workspace-456' }] }),
+      } as Response);
+
+      const workspaceId = await anchor.getWorkspaceId();
+      expect(workspaceId).toBe('workspace-456');
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/workspaces'),
+        expect.any(Object)
+      );
+    });
+
+    it('should return undefined when API call fails', async () => {
+      const anchor = new Anchor({ apiKey: 'anc_test_key' });
+      // Mock a 401 error response instead of rejection to avoid retry logic
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        text: async () => JSON.stringify({ error: 'Unauthorized' }),
+      } as Response);
+
+      const workspaceId = await anchor.getWorkspaceId();
+      expect(workspaceId).toBeUndefined();
+    }, 10000);
   });
 });
 
@@ -76,6 +119,29 @@ describe('Agents Namespace', () => {
     expect(agent.id).toBe('agent_123');
     expect(agent.name).toBe('test-agent');
     expect(agent.status).toBe('active');
+  });
+
+  it('should create agent with workspaceId override', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      text: async () => JSON.stringify({
+        agent: {
+          id: 'agent_123',
+          name: 'test-agent',
+          status: 'active',
+          metadata: { env: 'test' },
+          created_at: '2024-01-01T00:00:00Z',
+        },
+      }),
+    } as Response);
+
+    const agent = await anchor.agents.create('test-agent', { env: 'test' }, 'workspace-override');
+    
+    const callArgs = mockFetch.mock.calls[0];
+    const body = JSON.parse(callArgs[1]?.body as string);
+    expect(body.workspaceId).toBe('workspace-override');
+    expect(agent.id).toBe('agent_123');
   });
 
   it('should suspend agent using POST', async () => {

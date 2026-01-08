@@ -32,6 +32,7 @@ const getFetch = (): typeof fetch => {
 
 export class HttpClient {
   private config: Config;
+  private warnedAboutWorkspace: boolean = false;
 
   constructor(config: Config) {
     this.config = config;
@@ -71,17 +72,49 @@ export class HttpClient {
     method: string,
     endpoint: string,
     data?: Record<string, any>,
-    params?: Record<string, any>
+    params?: Record<string, any>,
+    workspaceId?: string
   ): Promise<T> {
     const baseUrl = this.config.baseUrl || 'https://api.getanchor.dev';
     const timeout = this.config.timeout || 30000;
     const retryAttempts = this.config.retryAttempts ?? 3;
     const retryDelay = this.config.retryDelay || 1000;
 
+    // Use provided workspaceId or fall back to config default
+    const effectiveWorkspaceId = workspaceId || this.config.workspaceId;
+
+    // Warn once if workspaceId is not provided
+    if (!effectiveWorkspaceId && !this.warnedAboutWorkspace) {
+      console.warn(
+        'workspaceId is not provided. The API requires workspaceId and will return ' +
+        'a ValidationError. To avoid data mixing issues, always provide workspaceId ' +
+        'when initializing Anchor() or pass it per-operation.'
+      );
+      this.warnedAboutWorkspace = true;
+    }
+
+    // Add workspaceId to request body for POST/PUT/PATCH requests
+    let requestData = data;
+    if (effectiveWorkspaceId && data !== undefined) {
+      requestData = { ...data };
+      if (!requestData.workspaceId) {
+        requestData.workspaceId = effectiveWorkspaceId;
+      }
+    }
+
+    // Add workspaceId to query params for GET/DELETE requests
+    let requestParams = params;
+    if (effectiveWorkspaceId && (method === 'GET' || method === 'DELETE')) {
+      requestParams = { ...(params || {}) };
+      if (!requestParams.workspaceId) {
+        requestParams.workspaceId = effectiveWorkspaceId;
+      }
+    }
+
     const url = new URL(`${baseUrl}${endpoint}`);
 
-    if (params) {
-      Object.entries(params).forEach(([key, value]) => {
+    if (requestParams) {
+      Object.entries(requestParams).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
           url.searchParams.append(key, String(value));
         }
@@ -89,7 +122,7 @@ export class HttpClient {
     }
 
     const headers: Record<string, string> = {
-      'User-Agent': 'anchorai-typescript/1.0.0',
+      'User-Agent': 'anchorai-typescript/1.0.1',
     };
 
     if (this.config.apiKey) {
@@ -114,7 +147,7 @@ export class HttpClient {
           response = await fetchFn(url.toString(), {
             method,
             headers,
-            body: data ? JSON.stringify(data) : undefined,
+            body: requestData ? JSON.stringify(requestData) : undefined,
             signal: controller.signal,
           });
         } catch (fetchError: any) {
@@ -194,23 +227,23 @@ export class HttpClient {
     throw new NetworkError('Request failed after retries');
   }
 
-  async get<T>(endpoint: string, params?: Record<string, any>): Promise<T> {
-    return this.request<T>('GET', endpoint, undefined, params);
+  async get<T>(endpoint: string, params?: Record<string, any>, workspaceId?: string): Promise<T> {
+    return this.request<T>('GET', endpoint, undefined, params, workspaceId);
   }
 
-  async post<T>(endpoint: string, data?: Record<string, any>, params?: Record<string, any>): Promise<T> {
-    return this.request<T>('POST', endpoint, data, params);
+  async post<T>(endpoint: string, data?: Record<string, any>, params?: Record<string, any>, workspaceId?: string): Promise<T> {
+    return this.request<T>('POST', endpoint, data, params, workspaceId);
   }
 
-  async put<T>(endpoint: string, data?: Record<string, any>, params?: Record<string, any>): Promise<T> {
-    return this.request<T>('PUT', endpoint, data, params);
+  async put<T>(endpoint: string, data?: Record<string, any>, params?: Record<string, any>, workspaceId?: string): Promise<T> {
+    return this.request<T>('PUT', endpoint, data, params, workspaceId);
   }
 
-  async patch<T>(endpoint: string, data?: Record<string, any>, params?: Record<string, any>): Promise<T> {
-    return this.request<T>('PATCH', endpoint, data, params);
+  async patch<T>(endpoint: string, data?: Record<string, any>, params?: Record<string, any>, workspaceId?: string): Promise<T> {
+    return this.request<T>('PATCH', endpoint, data, params, workspaceId);
   }
 
-  async delete<T>(endpoint: string, params?: Record<string, any>): Promise<T> {
-    return this.request<T>('DELETE', endpoint, undefined, params);
+  async delete<T>(endpoint: string, params?: Record<string, any>, workspaceId?: string): Promise<T> {
+    return this.request<T>('DELETE', endpoint, undefined, params, workspaceId);
   }
 }

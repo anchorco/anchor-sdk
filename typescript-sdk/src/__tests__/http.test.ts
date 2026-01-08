@@ -64,7 +64,7 @@ describe('HttpClient', () => {
           method: 'GET',
           headers: expect.objectContaining({
             'X-API-Key': 'anc_test_key',
-            'User-Agent': 'anchorai-typescript/1.0.0',
+            'User-Agent': 'anchorai-typescript/1.0.1',
           }),
         })
       );
@@ -528,7 +528,7 @@ describe('HttpClient', () => {
         expect.any(String),
         expect.objectContaining({
           headers: expect.objectContaining({
-            'User-Agent': 'anchorai-typescript/1.0.0',
+            'User-Agent': 'anchorai-typescript/1.0.1',
           }),
         })
       );
@@ -591,6 +591,127 @@ describe('HttpClient', () => {
       const result = await httpClient.get('/v1/test');
 
       expect(result).toEqual({ error: 'plain text response' });
+    });
+  });
+
+  describe('WorkspaceId Support', () => {
+    let httpClientWithWorkspace: HttpClient;
+    let httpClientWithoutWorkspace: HttpClient;
+
+    beforeEach(() => {
+      const configWithWorkspace: Config = {
+        apiKey: 'anc_test_key',
+        workspaceId: 'workspace-123',
+        baseUrl: 'https://api.getanchor.dev',
+      };
+      httpClientWithWorkspace = new HttpClient(configWithWorkspace);
+
+      const configWithoutWorkspace: Config = {
+        apiKey: 'anc_test_key',
+        baseUrl: 'https://api.getanchor.dev',
+      };
+      httpClientWithoutWorkspace = new HttpClient(configWithoutWorkspace);
+    });
+
+    it('should include workspaceId in POST request body', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify({ success: true }),
+      } as Response);
+
+      await httpClientWithWorkspace.post('/agents', { name: 'test-agent' });
+
+      const callArgs = mockFetch.mock.calls[0];
+      const body = JSON.parse(callArgs[1]?.body as string);
+      expect(body.workspaceId).toBe('workspace-123');
+      expect(body.name).toBe('test-agent');
+    });
+
+    it('should include workspaceId in GET request params', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify({ agents: [] }),
+      } as Response);
+
+      await httpClientWithWorkspace.get('/agents');
+
+      const callArgs = mockFetch.mock.calls[0];
+      const url = new URL(callArgs[0] as string);
+      expect(url.searchParams.get('workspaceId')).toBe('workspace-123');
+    });
+
+    it('should include workspaceId in PUT request body', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify({ updated: true }),
+      } as Response);
+
+      await httpClientWithWorkspace.put('/agents/123', { name: 'updated' });
+
+      const callArgs = mockFetch.mock.calls[0];
+      const body = JSON.parse(callArgs[1]?.body as string);
+      expect(body.workspaceId).toBe('workspace-123');
+    });
+
+    it('should include workspaceId in DELETE request params', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify({ deleted: true }),
+      } as Response);
+
+      await httpClientWithWorkspace.delete('/agents/123');
+
+      const callArgs = mockFetch.mock.calls[0];
+      const url = new URL(callArgs[0] as string);
+      expect(url.searchParams.get('workspaceId')).toBe('workspace-123');
+    });
+
+    it('should allow per-request workspaceId override', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify({ success: true }),
+      } as Response);
+
+      await httpClientWithWorkspace.post('/agents', { name: 'test' }, undefined, 'workspace-override');
+
+      const callArgs = mockFetch.mock.calls[0];
+      const body = JSON.parse(callArgs[1]?.body as string);
+      expect(body.workspaceId).toBe('workspace-override');
+    });
+
+    it('should not override existing workspaceId in data', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify({ success: true }),
+      } as Response);
+
+      await httpClientWithWorkspace.post('/agents', { name: 'test', workspaceId: 'workspace-999' });
+
+      const callArgs = mockFetch.mock.calls[0];
+      const body = JSON.parse(callArgs[1]?.body as string);
+      expect(body.workspaceId).toBe('workspace-999');
+    });
+
+    it('should warn when workspaceId is not provided', async () => {
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify({ success: true }),
+      } as Response);
+
+      await httpClientWithoutWorkspace.post('/agents', { name: 'test' });
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('workspaceId is not provided')
+      );
+      consoleSpy.mockRestore();
     });
   });
 });

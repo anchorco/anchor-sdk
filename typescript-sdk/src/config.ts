@@ -4,6 +4,7 @@
 
 export interface Config {
   apiKey: string;
+  workspaceId?: string;
   baseUrl?: string;
   region?: string;
   timeout?: number;
@@ -37,6 +38,7 @@ export function normalizeConfig(config: AnchorConfig): Config {
 
   const normalized: Config = {
     apiKey,
+    workspaceId: config.workspaceId,
     baseUrl: config.baseUrl || DEFAULT_CONFIG.baseUrl || 'https://api.getanchor.dev',
     region: config.region || DEFAULT_CONFIG.region,
     timeout: config.timeout ?? DEFAULT_CONFIG.timeout,

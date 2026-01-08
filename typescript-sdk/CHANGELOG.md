@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## 2025-01-08
+
+### Added
+- `workspaceId` parameter support in `Anchor` constructor and `Config` interface
+- Automatic `workspaceId` injection in all API requests (POST/PUT/PATCH in body, GET/DELETE in query params)
+- `workspaceId` parameter in `agents.create()` method (optional override)
+- `getWorkspaceId()` helper method to fetch default workspace ID from API
+- Warning when `workspaceId` is not provided (to prevent data mixing issues)
+
+### Changed
+- All API calls now automatically include `workspaceId` if set during client initialization
+- `HttpClient.request()` now accepts optional `workspaceId` parameter for per-request overrides
+- User-Agent updated to `anchorai-typescript/1.0.1`
+
+### Fixed
+- Resolves `ValidationError: workspaceId is required` when creating agents and other operations
+- Prevents data mixing issues by requiring explicit workspaceId
+
 ## [1.0.0] - 2025-12-30
 
 ### Added

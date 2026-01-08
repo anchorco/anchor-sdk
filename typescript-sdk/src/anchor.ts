@@ -90,6 +90,7 @@ export class Anchor {
    *
    * @param options - Configuration options
    * @param options.apiKey - API key (or set ANCHOR_API_KEY env var)
+   * @param options.workspaceId - Workspace ID (optional, can also be passed per-operation)
    * @param options.baseUrl - API base URL (default: https://api.getanchor.dev)
    * @param options.timeout - Request timeout in ms (default: 30000)
    * @param options.retryAttempts - Number of retry attempts (default: 3)
@@ -146,5 +147,33 @@ export class Anchor {
    */
   get clientConfig(): Config {
     return this._config;
+  }
+
+  /**
+   * Attempt to fetch the default workspace ID for the current API key.
+   *
+   * This is a convenience method. If it fails, you should provide workspaceId
+   * explicitly when initializing Anchor() or get it from the signup flow.
+   *
+   * @returns Workspace ID if found, undefined otherwise
+   *
+   */
+  async getWorkspaceId(): Promise<string | undefined> {
+    if (this._config.workspaceId) {
+      return this._config.workspaceId;
+    }
+
+    try {
+      const response = await this._http.get<{ workspaces?: Array<{ id?: string; workspaceId?: string }> }>('/workspaces');
+      const workspaces = response.workspaces || (Array.isArray(response) ? response : []);
+      if (workspaces.length > 0) {
+        return workspaces[0].id || workspaces[0].workspaceId;
+      }
+    } catch (error) {
+      // If endpoint doesn't exist or fails, return undefined
+      console.warn('Could not fetch workspace ID:', error);
+    }
+
+    return undefined;
   }
 }

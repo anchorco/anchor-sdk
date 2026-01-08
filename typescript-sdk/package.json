@@ -1,6 +1,6 @@
 {
   "name": "anchorai",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Control what your AI agents store. Audit everything.",
   "main": "dist/index.js",
   "module": "dist/index.js",

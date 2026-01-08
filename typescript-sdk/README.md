@@ -10,12 +10,30 @@ npm install anchorai
 
 ## Quick Start
 
+### 1. Get Your Credentials
+
+Sign up at [getanchor.dev](https://getanchor.dev) to get:
+- **API Key** (e.g., `your-api-key`)
+- **Workspace ID** (e.g., `your-workspace-id`)
+
+### 2. Install the SDK
+
+```bash
+npm install anchorai
+```
+
+### 3. Initialize and Use
+
 ```typescript
 import { Anchor } from 'anchorai';
 
-const anchor = new Anchor({ apiKey: 'your-api-key' });
+// Initialize with your API key and workspace ID
+const anchor = new Anchor({ 
+  apiKey: 'your-api-key',
+  workspaceId: 'your-workspace-id'
+});
 
-// Create an agent
+// Create an agent (workspaceId is automatically included)
 const agent = await anchor.agents.create('support-bot', { environment: 'production' });
 
 // Configure policies
