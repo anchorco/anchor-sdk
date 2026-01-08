@@ -37,7 +37,7 @@ class Telemetry:
         self.session.timeout = 2  # Short timeout, don't block
 
         # SDK metadata
-        self.sdk_version = "1.0.0"
+        self.sdk_version = "1.0.2"
         self.language = "python"
         self.language_version = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
         self.platform = platform.system()

@@ -1,6 +1,7 @@
 """HTTP client utilities for Anchor SDK."""
 
 import time
+import warnings
 import requests
 from typing import Optional, Dict, Any, TYPE_CHECKING
 
@@ -31,8 +32,10 @@ class HttpClient:
         self.config = config
         self.session = requests.Session()
         self.session.headers.update(
-            {"X-API-Key": config.api_key, "User-Agent": "anchorai-python/1.0.0"}
+            {"X-API-Key": config.api_key, "User-Agent": "anchorai-python/1.0.2"}
         )
+        # Track if we've warned about missing workspace_id
+        self._warned_about_workspace = False
 
     def _handle_error(self, response: requests.Response) -> None:
         """Parse and raise appropriate exception for API errors"""
@@ -78,6 +81,7 @@ class HttpClient:
         endpoint: str,
         data: Optional[Dict[str, Any]] = None,
         params: Optional[Dict[str, Any]] = None,
+        workspace_id: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Make HTTP request to Anchor API with retry logic.
@@ -87,6 +91,7 @@ class HttpClient:
             endpoint: API endpoint path (e.g., "/agents")
             data: Optional request body
             params: Optional query parameters
+            workspace_id: Optional workspace ID (overrides config default)
 
         Returns:
             Response JSON data
@@ -95,6 +100,35 @@ class HttpClient:
             AnchorAPIError: For API errors
             NetworkError: For network errors
         """
+        # Use provided workspace_id or fall back to config default
+        effective_workspace_id = workspace_id or self.config.workspace_id
+        
+        # Warn once if workspace_id is not provided (to prevent data mixing issues)
+        if not effective_workspace_id and not self._warned_about_workspace:
+            warnings.warn(
+                "workspace_id is not provided. The API requires workspaceId and will return "
+                "a ValidationError. To avoid data mixing issues, always provide workspace_id "
+                "when initializing Anchor() or pass it per-operation.",
+                UserWarning,
+                stacklevel=3
+            )
+            self._warned_about_workspace = True
+        
+        # Add workspace_id to request body for POST/PUT/PATCH requests
+        if effective_workspace_id and data is not None:
+            data = data.copy()
+            if "workspaceId" not in data:
+                data["workspaceId"] = effective_workspace_id
+        
+        # Add workspace_id to query params for GET/DELETE requests
+        if effective_workspace_id and method in ("GET", "DELETE"):
+            if params is None:
+                params = {}
+            else:
+                params = params.copy()
+            if "workspaceId" not in params:
+                params["workspaceId"] = effective_workspace_id
+        
         url = f"{self.config.base_url}{endpoint}"
         last_exception = None
 
@@ -155,40 +189,49 @@ class HttpClient:
         raise NetworkError("Request failed after retries")
 
     def get(
-        self, endpoint: str, params: Optional[Dict[str, Any]] = None
+        self, 
+        endpoint: str, 
+        params: Optional[Dict[str, Any]] = None,
+        workspace_id: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Make GET request"""
-        return self.request("GET", endpoint, params=params)
+        return self.request("GET", endpoint, params=params, workspace_id=workspace_id)
 
     def post(
         self,
         endpoint: str,
         data: Optional[Dict[str, Any]] = None,
         params: Optional[Dict[str, Any]] = None,
+        workspace_id: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Make POST request"""
-        return self.request("POST", endpoint, data=data, params=params)
+        return self.request("POST", endpoint, data=data, params=params, workspace_id=workspace_id)
 
     def put(
         self,
         endpoint: str,
         data: Optional[Dict[str, Any]] = None,
         params: Optional[Dict[str, Any]] = None,
+        workspace_id: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Make PUT request"""
-        return self.request("PUT", endpoint, data=data, params=params)
+        return self.request("PUT", endpoint, data=data, params=params, workspace_id=workspace_id)
 
     def patch(
         self,
         endpoint: str,
         data: Optional[Dict[str, Any]] = None,
         params: Optional[Dict[str, Any]] = None,
+        workspace_id: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Make PATCH request"""
-        return self.request("PATCH", endpoint, data=data, params=params)
+        return self.request("PATCH", endpoint, data=data, params=params, workspace_id=workspace_id)
 
     def delete(
-        self, endpoint: str, params: Optional[Dict[str, Any]] = None
+        self, 
+        endpoint: str, 
+        params: Optional[Dict[str, Any]] = None,
+        workspace_id: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Make DELETE request"""
-        return self.request("DELETE", endpoint, params=params)
+        return self.request("DELETE", endpoint, params=params, workspace_id=workspace_id)

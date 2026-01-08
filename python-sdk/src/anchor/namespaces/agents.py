@@ -70,6 +70,7 @@ class AgentsNamespace(BaseNamespace):
         self,
         name: str,
         metadata: Optional[Dict[str, Any]] = None,
+        workspace_id: Optional[str] = None,
     ) -> Agent:
         """
         Create a new agent.
@@ -77,6 +78,7 @@ class AgentsNamespace(BaseNamespace):
         Args:
             name: Human-readable agent name
             metadata: Optional key-value metadata
+            workspace_id: Optional workspace ID (overrides client default)
 
         Returns:
             Created Agent object
@@ -87,6 +89,7 @@ class AgentsNamespace(BaseNamespace):
                 "name": name,
                 "metadata": metadata or {},
             },
+            workspace_id=workspace_id,
         )
         agent_data = response.get("agent", response)
         return Agent.from_dict(agent_data)

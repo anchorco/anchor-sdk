@@ -14,6 +14,7 @@ class Config:
 
         config = Config(
             api_key="your-api-key",
+            workspace_id="your-workspace-id",
             base_url="https://api.getanchor.dev",
             timeout=30.0,
             retry_attempts=3
@@ -22,6 +23,7 @@ class Config:
     """
 
     api_key: str
+    workspace_id: Optional[str] = None
     base_url: str = "https://api.getanchor.dev"
     region: Optional[str] = None
     timeout: float = 30.0

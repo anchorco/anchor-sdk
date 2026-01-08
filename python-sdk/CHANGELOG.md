@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## 2025-01-08
+
+### Added
+- `workspace_id` parameter support in `Anchor.__init__()` and `ClientConfig`
+- Automatic `workspaceId` injection in all API requests (POST/PUT/PATCH in body, GET/DELETE in query params)
+- `workspace_id` parameter in `agents.create()` method (optional override)
+- `get_workspace_id()` helper method to fetch default workspace ID from API
+- Warning when `workspace_id` is not provided (to prevent data mixing issues)
+
+### Changed
+- All API calls now automatically include `workspaceId` if set during client initialization
+- `HttpClient.request()` now accepts optional `workspace_id` parameter for per-request overrides
+
+### Fixed
+- Resolves `ValidationError: workspaceId is required` when creating agents and other operations
+- Prevents data mixing issues by requiring explicit workspace_id
+
 ## [1.0.0] - 2025-12-30
 
 ### Added

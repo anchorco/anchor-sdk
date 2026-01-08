@@ -20,19 +20,28 @@ _Rollback_ when things break.
 
 ## Quick Start
 
-### 1. Get an API Key
+### 1. Sign Up and Get Credentials
 
-Sign up at [app.getanchor.dev](https://app.getanchor.dev) to get your API key and workspace ID.
+1. **Go to [app.getanchor.dev](https://app.getanchor.dev)**
+2. **Sign up** with your email (or log in if you already have an account)
+3. **Copy both values:**
+   - Your **API Key** (e.g., `anc_abc123...`)
+   - Your **Workspace ID** (e.g., `workspace-123`)
+4. **Important:** Save these securely - you won't be able to see the API key again!
 
-### 2. Start Using Anchor
+### 2. Install the SDK
 
 **Python** ([PyPI](https://pypi.org/project/anchorai/1.0.0/), [code](https://github.com/anchorco/anchor-sdk/python-sdk)):
 ```python
 from anchor import Anchor
 
-anchor = Anchor(api_key="your-api-key")
+# Initialize with your API key and workspace ID
+anchor = Anchor(api_key="your-api-key", workspace_id="workspace-123")
 
+# Create an agent
 agent = anchor.agents.create("support-bot")
+
+# Configure policies
 anchor.config.update(agent.id, {"policies": {"block_pii": True}})
 ```
 
@@ -40,7 +49,11 @@ anchor.config.update(agent.id, {"policies": {"block_pii": True}})
 ```typescript
 import { Anchor } from 'anchorai';
 
-const anchor = new Anchor({ apiKey: 'your-api-key' });
+// Initialize with your API key and workspace ID
+const anchor = new Anchor({ 
+  apiKey: 'your-api-key',
+  workspaceId: 'workspace-123'
+});
 
 const agent = await anchor.agents.create('support-bot');
 await anchor.config.update(agent.id, { policies: { block_pii: true } });

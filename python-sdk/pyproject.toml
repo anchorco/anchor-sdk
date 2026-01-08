@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "anchorai"
-version = "1.0.1"
+version = "1.0.2"
 description = "Control what your AI agents store. Audit everything."
 readme = "README.md"
 license = "Apache-2.0"

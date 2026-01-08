@@ -10,13 +10,33 @@ pip install anchorai
 
 ## Quick Start
 
+### 1. Get Your Credentials
+
+Sign up at [app.getanchor.dev](https://app.getanchor.dev) to get:
+- **API Key** (e.g., `anc_abc123...`)
+- **Workspace ID** (e.g., `workspace-123`)
+
+**Important:** Copy both values when you sign up - you won't be able to see the API key again!
+
+### 2. Install the SDK
+
+```bash
+pip install anchorai
+```
+
+### 3. Initialize and Use
+
 ```python
 from anchor import Anchor
 
-anchor = Anchor(api_key="your-api-key")
+# Initialize with your API key and workspace ID
+anchor = Anchor(api_key="your-api-key", workspace_id="workspace-123")
 
-# Create an agent
+# Create an agent (workspace_id is automatically included)
 agent = anchor.agents.create("support-bot", metadata={"environment": "production"})
+
+# Or pass workspace_id per-operation to override
+# agent = anchor.agents.create("support-bot", workspace_id="different-workspace")
 
 # Configure policies
 anchor.config.update(agent.id, {
@@ -266,18 +286,23 @@ except RateLimitError as e:
 ## Client Configuration
 
 ```python
-from anchor import Anchor
+from anchor import Anchor, ClientConfig
 
 # Simple
-anchor = Anchor(api_key="your-api-key")
+anchor = Anchor(api_key="your-api-key", workspace_id="workspace-1")
 
 # Full configuration
-anchor = Anchor(
+config = ClientConfig(
     api_key="your-api-key",
+    workspace_id="workspace-1",
     base_url="https://api.getanchor.dev",
     timeout=30.0,
     retry_attempts=3
 )
+anchor = Anchor(config=config)
+
+# workspace_id can also be passed per-operation to override the default
+agent = anchor.agents.create("my-agent", workspace_id="different-workspace")
 ```
 
 ## Requirements
