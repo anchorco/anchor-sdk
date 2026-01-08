@@ -33,6 +33,35 @@ class TestAnchorClient:
         assert hasattr(anchor, "checkpoints")
         assert hasattr(anchor, "audit")
 
+    def test_initialization_with_workspace_id(self):
+        """Test client initialization with workspace_id."""
+        anchor = Anchor(api_key="anc_test_key", workspace_id="workspace-123")
+        assert anchor.client_config.api_key == "anc_test_key"
+        assert anchor.client_config.workspace_id == "workspace-123"
+
+    def test_get_workspace_id_from_config(self):
+        """Test get_workspace_id returns workspace_id from config."""
+        anchor = Anchor(api_key="anc_test_key", workspace_id="workspace-123")
+        assert anchor.get_workspace_id() == "workspace-123"
+
+    def test_get_workspace_id_from_api(self):
+        """Test get_workspace_id fetches from API when not in config."""
+        anchor = Anchor(api_key="anc_test_key")
+        with patch.object(anchor._http, "get") as mock_get:
+            mock_get.return_value = {
+                "workspaces": [{"id": "workspace-456"}]
+            }
+            workspace_id = anchor.get_workspace_id()
+            assert workspace_id == "workspace-456"
+            mock_get.assert_called_once_with("/workspaces")
+
+    def test_get_workspace_id_returns_none_on_error(self):
+        """Test get_workspace_id returns None when API call fails."""
+        anchor = Anchor(api_key="anc_test_key")
+        with patch.object(anchor._http, "get", side_effect=Exception("API error")):
+            workspace_id = anchor.get_workspace_id()
+            assert workspace_id is None
+
 
 class TestAgentsNamespace:
     """Tests for agents namespace."""
@@ -73,6 +102,24 @@ class TestAgentsNamespace:
         assert agent.id == "agent_123"
         assert agent.name == "test-agent"
         assert agent.status == "active"
+
+    def test_create_agent_with_workspace_id_override(self, anchor, mock_http):
+        """Test creating an agent with workspace_id override."""
+        mock_http["post"].return_value = {
+            "agent": {
+                "id": "agent_123",
+                "name": "test-agent",
+                "status": "active",
+                "metadata": {},
+            }
+        }
+
+        agent = anchor.agents.create("test-agent", workspace_id="workspace-999")
+
+        assert isinstance(agent, Agent)
+        # Verify workspace_id was passed to HTTP client
+        call_args = mock_http["post"].call_args
+        assert call_args[1]["workspace_id"] == "workspace-999"
 
     def test_get_agent(self, anchor, mock_http):
         """Test getting an agent."""

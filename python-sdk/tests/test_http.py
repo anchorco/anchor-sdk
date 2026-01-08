@@ -33,6 +33,23 @@ class TestHttpClient:
         )
 
     @pytest.fixture
+    def config_with_workspace(self):
+        """Create a test config with workspace_id."""
+        return Config(
+            api_key="anc_test_key",
+            workspace_id="workspace-123",
+            base_url="https://api.getanchor.dev",
+            timeout=30.0,
+            retry_attempts=3,
+            retry_delay=0.1,
+        )
+
+    @pytest.fixture
+    def http_client_with_workspace(self, config_with_workspace):
+        """Create an HttpClient instance with workspace_id."""
+        return HttpClient(config_with_workspace)
+
+    @pytest.fixture
     def http_client(self, config):
         """Create an HttpClient instance."""
         return HttpClient(config)
@@ -42,7 +59,7 @@ class TestHttpClient:
         assert http_client.config == config
         assert http_client.session is not None
         assert http_client.session.headers["X-API-Key"] == "anc_test_key"
-        assert http_client.session.headers["User-Agent"] == "anchorai-python/1.0.0"
+        assert http_client.session.headers["User-Agent"] == "anchorai-python/1.0.2"
 
     def test_request_success(self, http_client):
         """Test successful HTTP request."""
@@ -406,4 +423,141 @@ class TestHttpClient:
         with patch.object(http_client.session, "request", return_value=mock_response):
             result = http_client.delete("/v1/test")
             assert result == {"deleted": True}
+
+
+class TestHttpClientWorkspaceId:
+    """Tests for workspace_id functionality in HttpClient."""
+
+    @pytest.fixture
+    def config_with_workspace(self):
+        """Create a test config with workspace_id."""
+        return Config(
+            api_key="anc_test_key",
+            workspace_id="workspace-123",
+            base_url="https://api.getanchor.dev",
+        )
+
+    @pytest.fixture
+    def config_without_workspace(self):
+        """Create a test config without workspace_id."""
+        return Config(
+            api_key="anc_test_key",
+            base_url="https://api.getanchor.dev",
+        )
+
+    @pytest.fixture
+    def http_client_with_workspace(self, config_with_workspace):
+        """Create an HttpClient instance with workspace_id."""
+        return HttpClient(config_with_workspace)
+
+    @pytest.fixture
+    def http_client_without_workspace(self, config_without_workspace):
+        """Create an HttpClient instance without workspace_id."""
+        return HttpClient(config_without_workspace)
+
+    def test_post_includes_workspace_id_in_body(self, http_client_with_workspace):
+        """Test that POST requests include workspaceId in body."""
+        mock_response = Mock()
+        mock_response.ok = True
+        mock_response.status_code = 200
+        mock_response.content = b'{"id": "123"}'
+        mock_response.json.return_value = {"id": "123"}
+
+        with patch.object(http_client_with_workspace.session, "request", return_value=mock_response):
+            http_client_with_workspace.post("/v1/test", data={"name": "test"})
+            call_args = http_client_with_workspace.session.request.call_args
+            assert call_args[0][0] == "POST"
+            assert "workspaceId" in call_args[1]["json"]
+            assert call_args[1]["json"]["workspaceId"] == "workspace-123"
+            assert call_args[1]["json"]["name"] == "test"
+
+    def test_get_includes_workspace_id_in_params(self, http_client_with_workspace):
+        """Test that GET requests include workspaceId in query params."""
+        mock_response = Mock()
+        mock_response.ok = True
+        mock_response.status_code = 200
+        mock_response.content = b'{"result": "success"}'
+        mock_response.json.return_value = {"result": "success"}
+
+        with patch.object(http_client_with_workspace.session, "request", return_value=mock_response):
+            http_client_with_workspace.get("/v1/test", params={"limit": 10})
+            call_args = http_client_with_workspace.session.request.call_args
+            assert call_args[0][0] == "GET"
+            assert "workspaceId" in call_args[1]["params"]
+            assert call_args[1]["params"]["workspaceId"] == "workspace-123"
+            assert call_args[1]["params"]["limit"] == 10
+
+    def test_put_includes_workspace_id_in_body(self, http_client_with_workspace):
+        """Test that PUT requests include workspaceId in body."""
+        mock_response = Mock()
+        mock_response.ok = True
+        mock_response.status_code = 200
+        mock_response.content = b'{"updated": true}'
+        mock_response.json.return_value = {"updated": True}
+
+        with patch.object(http_client_with_workspace.session, "request", return_value=mock_response):
+            http_client_with_workspace.put("/v1/test", data={"name": "updated"})
+            call_args = http_client_with_workspace.session.request.call_args
+            assert "workspaceId" in call_args[1]["json"]
+            assert call_args[1]["json"]["workspaceId"] == "workspace-123"
+
+    def test_delete_includes_workspace_id_in_params(self, http_client_with_workspace):
+        """Test that DELETE requests include workspaceId in query params."""
+        mock_response = Mock()
+        mock_response.ok = True
+        mock_response.status_code = 200
+        mock_response.content = b'{"deleted": true}'
+        mock_response.json.return_value = {"deleted": True}
+
+        with patch.object(http_client_with_workspace.session, "request", return_value=mock_response):
+            http_client_with_workspace.delete("/v1/test")
+            call_args = http_client_with_workspace.session.request.call_args
+            assert "workspaceId" in call_args[1]["params"]
+            assert call_args[1]["params"]["workspaceId"] == "workspace-123"
+
+    def test_per_request_workspace_id_override(self, http_client_with_workspace):
+        """Test that per-request workspace_id overrides config default."""
+        mock_response = Mock()
+        mock_response.ok = True
+        mock_response.status_code = 200
+        mock_response.content = b'{"id": "123"}'
+        mock_response.json.return_value = {"id": "123"}
+
+        with patch.object(http_client_with_workspace.session, "request", return_value=mock_response):
+            # Override workspace_id for this request
+            http_client_with_workspace.post("/v1/test", data={"name": "test"}, workspace_id="workspace-999")
+            call_args = http_client_with_workspace.session.request.call_args
+            assert call_args[1]["json"]["workspaceId"] == "workspace-999"  # Should use override, not config default
+
+    def test_workspace_id_not_added_if_already_present(self, http_client_with_workspace):
+        """Test that workspaceId is not duplicated if already in request."""
+        mock_response = Mock()
+        mock_response.ok = True
+        mock_response.status_code = 200
+        mock_response.content = b'{"id": "123"}'
+        mock_response.json.return_value = {"id": "123"}
+
+        with patch.object(http_client_with_workspace.session, "request", return_value=mock_response):
+            # Request already has workspaceId
+            http_client_with_workspace.post("/v1/test", data={"name": "test", "workspaceId": "workspace-999"})
+            call_args = http_client_with_workspace.session.request.call_args
+            # Should keep the one from request, not add config default
+            assert call_args[1]["json"]["workspaceId"] == "workspace-999"
+
+    def test_warning_when_workspace_id_missing(self, http_client_without_workspace):
+        """Test that warning is shown when workspace_id is not provided."""
+        import warnings
+        mock_response = Mock()
+        mock_response.ok = True
+        mock_response.status_code = 200
+        mock_response.content = b'{"result": "success"}'
+        mock_response.json.return_value = {"result": "success"}
+
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            with patch.object(http_client_without_workspace.session, "request", return_value=mock_response):
+                http_client_without_workspace.get("/v1/test")
+                # Should have warning about missing workspace_id
+                assert len(w) > 0
+                assert any("workspace_id" in str(warning.message).lower() for warning in w)
 
