@@ -684,3 +684,92 @@ class TestMCPIntegration:
 
         assert hasattr(mcp, "AnchorMCPServer")
         assert mcp.AnchorMCPServer is AnchorMCPServer
+
+    def test_anchor_mcp_server_repr(self, anchor, agent_id):
+        """Test __repr__ for debugging."""
+        from anchor.integrations.mcp import AnchorMCPServer
+
+        class DummyServer:
+            """Mock MCP server for testing."""
+            def __repr__(self):
+                return "DummyServer()"
+
+        wrapper = AnchorMCPServer(
+            anchor=anchor,
+            agent_id=agent_id,
+            base_server=DummyServer(),
+            validate=False
+        )
+
+        repr_str = repr(wrapper)
+        assert "AnchorMCPServer" in repr_str
+        assert agent_id in repr_str
+        assert "DummyServer" in repr_str
+
+    def test_anchor_mcp_server_hooks_called(self, anchor, agent_id):
+        """Test that pre/post start hooks are called."""
+        from anchor.integrations.mcp import AnchorMCPServer
+        from unittest.mock import patch
+
+        class DummyServer:
+            """Mock MCP server for testing."""
+            def start(self):
+                return "started"
+
+        wrapper = AnchorMCPServer(
+            anchor=anchor,
+            agent_id=agent_id,
+            base_server=DummyServer(),
+            validate=False
+        )
+
+        # Patch the hook methods to track calls
+        with patch.object(wrapper, '_pre_start_hook') as mock_pre, \
+             patch.object(wrapper, '_post_start_hook') as mock_post:
+            
+            result = wrapper.start()
+            
+            assert result == "started"
+            mock_pre.assert_called_once()
+            mock_post.assert_called_once()
+
+    def test_anchor_mcp_server_stop_with_stop_method(self, anchor, agent_id):
+        """Test stop() when base_server has stop method."""
+        from anchor.integrations.mcp import AnchorMCPServer
+
+        class DummyServer:
+            """Mock MCP server for testing."""
+            def start(self):
+                return "started"
+            
+            def stop(self):
+                return "stopped"
+
+        wrapper = AnchorMCPServer(
+            anchor=anchor,
+            agent_id=agent_id,
+            base_server=DummyServer(),
+            validate=False
+        )
+
+        assert wrapper.stop() == "stopped"
+
+    def test_anchor_mcp_server_stop_without_stop_method(self, anchor, agent_id):
+        """Test stop() when base_server doesn't have stop method."""
+        from anchor.integrations.mcp import AnchorMCPServer
+
+        class DummyServer:
+            """Mock MCP server for testing."""
+            def start(self):
+                return "started"
+
+        wrapper = AnchorMCPServer(
+            anchor=anchor,
+            agent_id=agent_id,
+            base_server=DummyServer(),
+            validate=False
+        )
+
+        # Should return None gracefully
+        assert wrapper.stop() is None
+
