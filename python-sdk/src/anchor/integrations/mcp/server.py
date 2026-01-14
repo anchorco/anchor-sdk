@@ -66,10 +66,6 @@ class AnchorMCPServer:
         if not agent_id or not isinstance(agent_id, str):
             raise ValueError("agent_id must be a non-empty string")
 
-        self.anchor = anchor
-        self.agent_id = agent_id
-        self.base_server = base_server
-
         # Optional validation for better DX and early error detection
         if validate:
             if not hasattr(anchor, "agents"):
@@ -85,6 +81,10 @@ class AnchorMCPServer:
                     f"Failed to validate agent_id '{agent_id}': {e}. "
                     "Pass validate=False to skip validation."
                 ) from e
+
+        self.anchor = anchor
+        self.agent_id = agent_id
+        self.base_server = base_server
 
     def start(self) -> Any:
         """
