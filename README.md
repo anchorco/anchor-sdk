@@ -22,7 +22,7 @@ _Rollback_ when things break.
 
 ### 1. Sign Up and Get Credentials
 
-1. **Go to [app.getanchor.dev](https://app.getanchor.dev)**
+1. **Go to [app.getanchor.dev](https://getanchor.dev)**
 2. **Sign up** with your email (or log in if you already have an account)
 3. **Copy your API Key** (e.g., `anc_abc123...`)
 4. **Important:** Save this securely - you won't be able to see the API key again!
