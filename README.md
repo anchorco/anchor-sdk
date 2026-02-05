@@ -33,7 +33,7 @@ _Rollback_ when things break.
 
 ### 2. Install the SDK
 
-**Python** ([PyPI](https://pypi.org/project/anchorai/1.1.0/), [Code](https://github.com/anchorco/anchor-sdk/python-sdk)):
+**Python** ([PyPI](https://pypi.org/project/anchorai), [Code](https://github.com/anchorco/anchor-sdk/python-sdk)):
 ```python
 from anchor import Anchor
 
@@ -47,7 +47,7 @@ agent = anchor.agents.create("support-bot")
 anchor.config.update(agent.id, {"policies": {"block_pii": True}})
 ```
 
-**TypeScript** ([NPM](https://www.npmjs.com/package/anchorai/1.1.0), [Code](https://github.com/anchorco/anchor-sdk)):
+**TypeScript** ([NPM](https://www.npmjs.com/package/anchorai), [Code](https://github.com/anchorco/anchor-sdk)):
 ```typescript
 import { Anchor } from 'anchorai';
 
