@@ -25,7 +25,7 @@ _Rollback_ when things break.
 
 ### 1. Sign Up and Get Credentials
 
-1. **Go to [app.getanchor.dev](https://getanchor.dev)**
+1. **Go to [getanchor.dev](https://getanchor.dev)**
 2. **Sign up** with your email (or log in if you already have an account)
 3. **Copy your API Key** (e.g., `anc_abc123...`)
 
@@ -33,7 +33,7 @@ _Rollback_ when things break.
 
 ### 2. Install the SDK
 
-**Python** ([PyPI](https://pypi.org/project/anchorai), [Code](https://github.com/anchorco/anchor-sdk/python-sdk)):
+**Python** ([PyPI](https://pypi.org/project/anchorai), [Code](https://github.com/anchorco/anchor-sdk/tree/main/python-sdk)):
 ```python
 from anchor import Anchor
 
@@ -47,7 +47,7 @@ agent = anchor.agents.create("support-bot")
 anchor.config.update(agent.id, {"policies": {"block_pii": True}})
 ```
 
-**TypeScript** ([NPM](https://www.npmjs.com/package/anchorai), [Code](https://github.com/anchorco/anchor-sdk)):
+**TypeScript** ([NPM](https://www.npmjs.com/package/anchorai), [Code](https://github.com/anchorco/anchor-sdk/tree/main/typescript-sdk)):
 ```typescript
 import { Anchor } from 'anchorai';
 
